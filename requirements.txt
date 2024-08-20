@@ -1,0 +1,8 @@
+geopandas 
+pandas 
+plotly
+geopandas
+simpledbf
+fiona
+dash
+openpyxl
