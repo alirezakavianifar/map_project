@@ -33,10 +33,10 @@ economic_regions = economic_regions[economic_regions['PRUID'] == '35']
 # Convert economic regions to GeoJSON for Plotly
 geojson = json.loads(economic_regions.to_json())
 
-selected_regions = []
+selected_regions = set()
 
 # Function to create the initial or updated map figure
-def create_map_figure(selected_regions=[], selected_company_name=None):
+def create_map_figure(selected_regions=None, selected_company_name=None):
     # Base map figure with all regions
     fig = px.choropleth_mapbox(
         economic_regions,
@@ -84,7 +84,7 @@ def create_map_figure(selected_regions=[], selected_company_name=None):
         legend_title_text="CU NAME"
     )
 
-    if len(selected_regions) > 0:
+    if selected_regions:
         # Highlight each selected region
         for region in selected_regions:
             region_index = economic_regions[economic_regions['ERNAME'] == region].index
@@ -156,7 +156,7 @@ def display_selected_data(clickData, n_clicks):
         point_data = clickData['points'][0]
         if 'location' in point_data:
             location_id = point_data['location']
-            selected_regions.append(economic_regions.loc[location_id, 'ERNAME'])
+            selected_regions.add(economic_regions.loc[location_id, 'ERNAME'])
             return create_map_figure(selected_regions)
         else:
             lat, lon = point_data['lat'], point_data['lon']
@@ -166,7 +166,8 @@ def display_selected_data(clickData, n_clicks):
                 selected_region_name = selected_branch.iloc[0]['ERNAME']
                 selected_company_name = selected_branch.iloc[0]['Name']
                 selected_branches = branches_with_regions[branches_with_regions['Name'] == selected_company_name]
-                selected_regions.extend(selected_branches['ERNAME'].unique())
+                for ername in selected_branches['ERNAME'].unique():
+                    selected_regions.add(ername)
                 return create_map_figure(selected_regions, selected_company_name)
     
     return create_map_figure()
